@@ -34,7 +34,7 @@ where
             return Err(LexerError {
                 column: 0,
                 line: line_number,
-                message: format!("Error reading line {}: {}", line_number, err),
+                message: format!("error reading line {}: {}", line_number, err),
             });
         }
 
@@ -70,7 +70,7 @@ fn tokenize_string(chars: &mut Enumerate<Chars>, line: usize) -> Result<Token> {
     Err(LexerError {
         column,
         line,
-        message: String::from("Error lexing string: missing closing \""),
+        message: String::from("error lexing string: missing closing \""),
     })
 }
 
@@ -96,7 +96,7 @@ fn tokenize_symbol(
             return Err(LexerError {
                 line,
                 column,
-                message: format!("Error lexing symbol: forbidden character: {}", c),
+                message: format!("error lexing symbol: forbidden character: {}", c),
             });
         }
 

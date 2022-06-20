@@ -10,7 +10,7 @@ fn tokenizer_fails_on_missing_quote() {
         Err(LexerError {
             line: 0,
             column: 14,
-            message: String::from("Error lexing string: missing closing \"")
+            message: String::from("error lexing string: missing closing \"")
         }),
     )
 }
