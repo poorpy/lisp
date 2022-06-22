@@ -4,6 +4,7 @@ mod symbol;
 mod tests;
 
 use super::lexer::Token;
+use crate::eval::RuntimeError;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ParserError {
@@ -23,6 +24,10 @@ pub enum Atom {
 pub enum Sexp {
     Atom(Atom),
     List(Vec<Sexp>),
+    Func {
+        fun: fn(Sexp) -> std::result::Result<Sexp, RuntimeError>,
+        name: &'static str,
+    },
 }
 
 pub type Result<T> = std::result::Result<T, ParserError>;

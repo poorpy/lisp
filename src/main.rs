@@ -2,6 +2,8 @@ use std::{fs::File, io::{BufReader, BufRead}};
 
 mod lexer;
 mod parser;
+mod eval;
+mod env;
 
 use lexer::tokenize;
 

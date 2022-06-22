@@ -1,4 +1,4 @@
-use super::{tokenize, LexerError, Token};
+use crate::lexer::{tokenize, LexerError, Token};
 use std::io::BufRead;
 
 #[test]
