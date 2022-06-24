@@ -43,12 +43,12 @@ fn eval_list(mut list: Vec<Sexp>, env: &Env) -> Result<Sexp> {
 
     match &list[0] {
         Sexp::Func { fun, .. } => {
-            return apply_builtin(fun.clone(), Sexp::List(list[1..].to_vec()))
+            apply_builtin(*fun, Sexp::List(list[1..].to_vec()))
         }
         Sexp::Atom(atom @ Atom::Symbol(_)) => {
             // we replace initial symbol with its expanded form
             list[0] = eval_atom(atom.clone(), env)?;
-            return eval_list(list, env);
+            eval_list(list, env)
         }
         _ => Err(RuntimeError::WrongArgumentKind(format!(
             "eval list, expected function, got: {}",
