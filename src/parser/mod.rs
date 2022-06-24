@@ -30,6 +30,22 @@ pub enum Sexp {
     },
 }
 
+impl Sexp {
+    pub fn get_kind_name(&self) -> &str {
+        match &self {
+            Sexp::Atom(_) => "atom",
+            Sexp::List(_) => "list",
+            Sexp::Func { .. } => "builtin function",
+        }
+    }
+}
+
+impl From<Vec<Sexp>> for Sexp {
+    fn from(vec: Vec<Sexp>) -> Self {
+        Sexp::List(vec)
+    }
+}
+
 pub type Result<T> = std::result::Result<T, ParserError>;
 
 pub fn read_from_tokens(tokens: Vec<Token>) -> Result<Vec<Sexp>> {
