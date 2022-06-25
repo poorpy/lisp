@@ -10,8 +10,8 @@ pub fn is_atom(args: Vec<Sexp>) -> Result<Sexp> {
     }
 
     match args[0] {
-        Sexp::Atom(_) => return Ok(Sexp::Atom(Atom::T)),
-        _ => return Ok(Sexp::Atom(Atom::Nil)),
+        Sexp::Atom(_) => Ok(Sexp::Atom(Atom::T)),
+        _ => Ok(Sexp::Atom(Atom::Nil)),
     }
 }
 
@@ -21,8 +21,8 @@ pub fn is_list(args: Vec<Sexp>) -> Result<Sexp> {
     }
 
     match args[0] {
-        Sexp::List(_) | Sexp::Atom(Atom::Nil) => return Ok(Sexp::Atom(Atom::T)),
-        _ => return Ok(Sexp::Atom(Atom::Nil)),
+        Sexp::List(_) | Sexp::Atom(Atom::Nil) => Ok(Sexp::Atom(Atom::T)),
+        _ => Ok(Sexp::Atom(Atom::Nil)),
     }
 }
 
@@ -32,8 +32,8 @@ pub fn is_function(args: Vec<Sexp>) -> Result<Sexp> {
     }
 
     match args[0] {
-        Sexp::Func { .. } => return Ok(Sexp::Atom(Atom::T)),
-        _ => return Ok(Sexp::Atom(Atom::Nil)),
+        Sexp::Func { .. } => Ok(Sexp::Atom(Atom::T)),
+        _ => Ok(Sexp::Atom(Atom::Nil)),
     }
 }
 
@@ -43,8 +43,8 @@ pub fn is_string(args: Vec<Sexp>) -> Result<Sexp> {
     }
 
     match args[0] {
-        Sexp::Atom(Atom::String(_)) => return Ok(Sexp::Atom(Atom::T)),
-        _ => return Ok(Sexp::Atom(Atom::Nil)),
+        Sexp::Atom(Atom::String(_)) => Ok(Sexp::Atom(Atom::T)),
+        _ => Ok(Sexp::Atom(Atom::Nil)),
     }
 }
 
@@ -54,8 +54,8 @@ pub fn is_symbol(args: Vec<Sexp>) -> Result<Sexp> {
     }
 
     match args[0] {
-        Sexp::Atom(Atom::Symbol(_)) => return Ok(Sexp::Atom(Atom::T)),
-        _ => return Ok(Sexp::Atom(Atom::Nil)),
+        Sexp::Atom(Atom::Symbol(_)) => Ok(Sexp::Atom(Atom::T)),
+        _ => Ok(Sexp::Atom(Atom::Nil)),
     }
 }
 
@@ -65,7 +65,7 @@ pub fn is_number(args: Vec<Sexp>) -> Result<Sexp> {
     }
 
     match args[0] {
-        Sexp::Atom(Atom::Number(_)) => return Ok(Sexp::Atom(Atom::T)),
-        _ => return Ok(Sexp::Atom(Atom::Nil)),
+        Sexp::Atom(Atom::Number(_)) => Ok(Sexp::Atom(Atom::T)),
+        _ => Ok(Sexp::Atom(Atom::Nil)),
     }
 }
