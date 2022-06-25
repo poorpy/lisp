@@ -9,7 +9,7 @@ use rstest::rstest;
 #[case(Sexp::Atom(Atom::T), Ok(Sexp::Atom(Atom::T)))]
 #[case(Sexp::List(vec![]), Ok(Sexp::Atom(Atom::Nil)))]
 fn is_atom_works_correctly(#[case] input: Sexp, #[case] expected: Result<Sexp>) {
-    let args = Sexp::from(vec![input]);
+    let args = vec![input];
     assert_eq!(is_atom(args), expected)
 }
 
@@ -18,7 +18,7 @@ fn is_atom_works_correctly(#[case] input: Sexp, #[case] expected: Result<Sexp>) 
 #[case(Sexp::List(vec![]), Ok(Sexp::Atom(Atom::T)))]
 #[case(Sexp::Atom(Atom::Nil), Ok(Sexp::Atom(Atom::T)))]
 fn is_list_works_correctly(#[case] input: Sexp, #[case] expected: Result<Sexp>) {
-    let args = Sexp::from(vec![input]);
+    let args = vec![input];
     assert_eq!(is_list(args), expected)
 }
 
@@ -27,7 +27,7 @@ fn is_list_works_correctly(#[case] input: Sexp, #[case] expected: Result<Sexp>) 
 #[case(Sexp::List(vec![]), Ok(Sexp::Atom(Atom::Nil)))]
 #[case(Sexp::Func { fun: is_function, name: "" }, Ok(Sexp::Atom(Atom::T)))]
 fn is_function_works_correctly(#[case] input: Sexp, #[case] expected: Result<Sexp>) {
-    let args = Sexp::from(vec![input]);
+    let args = vec![input];
     assert_eq!(is_function(args), expected)
 }
 
@@ -36,7 +36,7 @@ fn is_function_works_correctly(#[case] input: Sexp, #[case] expected: Result<Sex
 #[case(Sexp::List(vec![]), Ok(Sexp::Atom(Atom::Nil)))]
 #[case(Sexp::Func { fun: is_function, name: "" }, Ok(Sexp::Atom(Atom::Nil)))]
 fn is_string_works_correctly(#[case] input: Sexp, #[case] expected: Result<Sexp>) {
-    let args = Sexp::from(vec![input]);
+    let args = vec![input];
     assert_eq!(is_string(args), expected)
 }
 
@@ -44,7 +44,7 @@ fn is_string_works_correctly(#[case] input: Sexp, #[case] expected: Result<Sexp>
 #[case(Sexp::Atom(Atom::Symbol("symbol".to_string())), Ok(Sexp::Atom(Atom::T)))]
 #[case(Sexp::List(vec![]), Ok(Sexp::Atom(Atom::Nil)))]
 fn is_symbol_works_correctly(#[case] input: Sexp, #[case] expected: Result<Sexp>) {
-    let args = Sexp::from(vec![input]);
+    let args = vec![input];
     assert_eq!(is_symbol(args), expected)
 }
 
@@ -52,6 +52,6 @@ fn is_symbol_works_correctly(#[case] input: Sexp, #[case] expected: Result<Sexp>
 #[case(Sexp::Atom(Atom::Number(1.0)), Ok(Sexp::Atom(Atom::T)))]
 #[case(Sexp::List(vec![]), Ok(Sexp::Atom(Atom::Nil)))]
 fn is_number_works_correctly(#[case] input: Sexp, #[case] expected: Result<Sexp>) {
-    let args = Sexp::from(vec![input]);
+    let args = vec![input];
     assert_eq!(is_number(args), expected)
 }

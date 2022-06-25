@@ -8,13 +8,13 @@ use rstest::rstest;
 
 #[test]
 fn can_create_list() {
-    let args = Sexp::from(vec![Sexp::Atom(Atom::T)]);
+    let args = vec![Sexp::Atom(Atom::T)];
     assert_eq!(list(args), Ok(Sexp::List(vec![Sexp::Atom(Atom::T)])))
 }
 
 #[test]
 fn list_create_fails_with_no_args() {
-    let args = Sexp::from(vec![]);
+    let args = vec![];
     assert_eq!(list(args), Err(RuntimeError::WrongArgumentArity(0)))
 }
 
@@ -23,7 +23,7 @@ fn list_create_fails_with_no_args() {
 #[case(Sexp::List(vec![]), Ok(Sexp::Atom(Atom::Nil)))]
 #[case(Sexp::List(vec![Sexp::Atom(Atom::T)]), Ok(Sexp::Atom(Atom::T)))]
 fn car_returns_head_of_a_list(#[case] input: Sexp, #[case] expected: Result<Sexp>) {
-    let args = Sexp::from(vec![input]);
+    let args = vec![input];
     assert_eq!(car(args), expected)
 }
 
@@ -33,6 +33,6 @@ fn car_returns_head_of_a_list(#[case] input: Sexp, #[case] expected: Result<Sexp
 #[case(Sexp::List(vec![Sexp::Atom(Atom::T)]), Ok(Sexp::List(vec![])))]
 #[case(Sexp::List(vec![Sexp::Atom(Atom::T), Sexp::Atom(Atom::T)]), Ok(Sexp::List(vec![Sexp::Atom(Atom::T)])))]
 fn cdr_returns_tail_of_a_list(#[case] input: Sexp, #[case] expected: Result<Sexp>) {
-    let args = Sexp::from(vec![input]);
+    let args = vec![input];
     assert_eq!(cdr(args), expected)
 }

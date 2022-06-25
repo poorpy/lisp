@@ -43,7 +43,7 @@ fn eval_list(mut list: Vec<Sexp>, env: &Env) -> Result<Sexp> {
 
     match &list[0] {
         Sexp::Func { fun, .. } => {
-            apply_builtin(*fun, Sexp::List(list[1..].to_vec()))
+            apply_builtin(*fun, list[1..].to_vec())
         }
         Sexp::Atom(atom @ Atom::Symbol(_)) => {
             // we replace initial symbol with its expanded form
@@ -57,6 +57,6 @@ fn eval_list(mut list: Vec<Sexp>, env: &Env) -> Result<Sexp> {
     }
 }
 
-fn apply_builtin(fun: fn(Sexp) -> Result<Sexp>, args: Sexp) -> Result<Sexp> {
+fn apply_builtin(fun: fn(Vec<Sexp>) -> Result<Sexp>, args: Vec<Sexp>) -> Result<Sexp> {
     fun(args)
 }

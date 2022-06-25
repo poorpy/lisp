@@ -25,7 +25,7 @@ pub enum Sexp {
     Atom(Atom),
     List(Vec<Sexp>),
     Func {
-        fun: fn(Sexp) -> std::result::Result<Sexp, RuntimeError>,
+        fun: fn(Vec<Sexp>) -> std::result::Result<Sexp, RuntimeError>,
         name: &'static str,
     },
 }
