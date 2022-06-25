@@ -36,14 +36,18 @@ fn eval_atom(atom: Atom, env: &Env) -> Result<Sexp> {
     }
 }
 
-fn eval_list(mut list: Vec<Sexp>, env: &Env) -> Result<Sexp> {
+fn eval_list(mut list: Vec<Sexp>, env: &mut Env) -> Result<Sexp> {
     if list.is_empty() {
         return Ok(Sexp::Atom(Atom::Nil));
     }
 
     match &list[0] {
         Sexp::Func { fun, .. } => {
-            apply_builtin(*fun, list[1..].to_vec())
+            let mut args: Vec<Sexp> = Vec::new();
+            for item in list[1..].iter().map(|sexp| eval(sexp.clone(), env)) {
+                args.push(item?)
+            }
+            apply_builtin(*fun, args)
         }
         Sexp::Atom(atom @ Atom::Symbol(_)) => {
             // we replace initial symbol with its expanded form
