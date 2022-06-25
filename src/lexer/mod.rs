@@ -113,7 +113,7 @@ fn tokenize_symbol(
             return Ok(vec![Token::Symbol(symbol)]);
         }
 
-        symbol.push(c)
+        symbol.push(c);
     }
 
     Ok(vec![Token::Symbol(symbol)])

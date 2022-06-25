@@ -2,9 +2,21 @@ mod predicates;
 
 use std::collections::HashMap;
 
-use self::predicates::is_atom;
+use crate::env::predicates::{is_atom, is_function, is_list, is_number, is_string, is_symbol};
 
 use super::parser::Sexp;
+
+macro_rules! add_func_to_env {
+    ($ name : expr, $ func : expr, $ env : expr) => {
+        $env.data.insert(
+            $name.to_string(),
+            Sexp::Func {
+                fun: $func,
+                name: $name,
+            },
+        )
+    };
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct LookupError {
@@ -39,13 +51,12 @@ impl<'a> Default for Env<'a> {
     fn default() -> Self {
         let mut default = Env::new(None);
 
-        default.data.insert(
-            "atom?".to_string(),
-            Sexp::Func {
-                fun: is_atom,
-                name: "atom?",
-            },
-        );
+        add_func_to_env!("atom?", is_atom, default);
+        add_func_to_env!("list?", is_list, default);
+        add_func_to_env!("function?", is_function, default);
+        add_func_to_env!("string?", is_string, default);
+        add_func_to_env!("symbol?", is_symbol, default);
+        add_func_to_env!("number?", is_number, default);
 
         default
     }
