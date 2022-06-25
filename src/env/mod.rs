@@ -1,8 +1,9 @@
 mod predicates;
+mod special_forms;
 
 use std::collections::HashMap;
 
-use crate::env::predicates::{is_atom, is_function, is_list, is_number, is_string, is_symbol};
+use crate::env::{predicates::{is_atom, is_function, is_list, is_number, is_string, is_symbol}, special_forms::list};
 
 use super::parser::Sexp;
 
@@ -50,13 +51,17 @@ impl<'a> Env<'a> {
 impl<'a> Default for Env<'a> {
     fn default() -> Self {
         let mut default = Env::new(None);
-
+        
+        // predicates
         add_func_to_env!("atom?", is_atom, default);
         add_func_to_env!("list?", is_list, default);
         add_func_to_env!("function?", is_function, default);
         add_func_to_env!("string?", is_string, default);
         add_func_to_env!("symbol?", is_symbol, default);
         add_func_to_env!("number?", is_number, default);
+
+        // list manipulation
+        add_func_to_env!("list", list, default);
 
         default
     }
