@@ -21,6 +21,8 @@ pub fn rewrite_quotes(ast: Vec<Sexp>) -> Vec<Sexp> {
                             ]));
                         }
                     }
+                } else {
+                    new_ast.push(Sexp::Atom(Atom::Symbol("quote".to_string())))
                 }
             }
             Sexp::List(list) => new_ast.push(Sexp::List(rewrite_quotes(list))),

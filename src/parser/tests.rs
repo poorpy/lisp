@@ -77,6 +77,7 @@ fn parser_rewrites_quotes() {
         Token::Symbol(String::from("'")),
         Token::Symbol(String::from("nil")),
         Token::RParen,
+        Token::Symbol(String::from("'")),
     ];
     let result = read_from_tokens(tokens);
     assert_eq!(
@@ -96,6 +97,7 @@ fn parser_rewrites_quotes() {
                     ])
                 ])
             ]),
+            Sexp::Atom(Atom::Symbol(String::from("quote"))),
         ])
     )
 }
