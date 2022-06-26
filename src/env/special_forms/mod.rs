@@ -60,3 +60,12 @@ pub fn cdr(args: Vec<Sexp>) -> Result<Sexp> {
         args[0].get_kind_name()
     )))
 }
+
+/// Returns unevaluated argument
+pub fn quote(mut args: Vec<Sexp>) -> Result<Sexp> {
+    if args.len() != 1 {
+        return Err(RuntimeError::WrongArgumentArity(args.len()));
+    }
+
+    Ok(args.pop().unwrap())
+}

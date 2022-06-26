@@ -1,5 +1,5 @@
-#![allow(dead_code)]
-mod symbol;
+mod rewrite;
+
 #[cfg(test)]
 mod tests;
 
@@ -69,7 +69,7 @@ pub fn read_from_tokens(tokens: Vec<Token>) -> Result<Vec<Sexp>> {
         }
     }
 
-    Ok(expressions)
+    Ok(rewrite::rewrite_quotes(expressions))
 }
 
 fn parse_string(token: String) -> Sexp {

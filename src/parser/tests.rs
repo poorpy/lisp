@@ -65,3 +65,37 @@ fn parser_parses_list() {
         ])])
     )
 }
+
+#[test]
+fn parser_rewrites_quotes() {
+    let tokens = vec![
+        Token::Symbol(String::from("'")),
+        Token::Symbol(String::from("symbol")),
+        Token::Symbol(String::from("'")),
+        Token::LParen,
+        Token::Symbol(String::from("nil")),
+        Token::Symbol(String::from("'")),
+        Token::Symbol(String::from("nil")),
+        Token::RParen,
+    ];
+    let result = read_from_tokens(tokens);
+    assert_eq!(
+        result,
+        Ok(vec![
+            Sexp::List(vec![
+                Sexp::Atom(Atom::Symbol(String::from("quote"))),
+                Sexp::Atom(Atom::Symbol(String::from("symbol"))),
+            ]),
+            Sexp::List(vec![
+                Sexp::Atom(Atom::Symbol(String::from("quote"))),
+                Sexp::List(vec![
+                    Sexp::Atom(Atom::Nil),
+                    Sexp::List(vec![
+                        Sexp::Atom(Atom::Symbol(String::from("quote"))),
+                        Sexp::Atom(Atom::Nil)
+                    ])
+                ])
+            ]),
+        ])
+    )
+}

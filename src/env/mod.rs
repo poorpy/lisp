@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 use crate::env::{
     predicates::{is_atom, is_function, is_list, is_number, is_string, is_symbol},
-    special_forms::{car, cdr, list},
+    special_forms::{car, cdr, list, quote},
 };
 
 use super::parser::Sexp;
@@ -67,6 +67,9 @@ impl<'a> Default for Env<'a> {
         add_func_to_env!("list", list, default);
         add_func_to_env!("car", car, default);
         add_func_to_env!("cdr", cdr, default);
+
+        // non eval
+        add_func_to_env!("quote", quote, default);
 
         default
     }

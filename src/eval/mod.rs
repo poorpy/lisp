@@ -5,6 +5,8 @@ mod tests;
 use super::env::{Env, LookupError};
 use super::parser::{Atom, Sexp};
 
+const NOOP_NAME: &str = "quote";
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum RuntimeError {
     Any,
@@ -42,12 +44,17 @@ fn eval_list(mut list: Vec<Sexp>, env: &mut Env) -> Result<Sexp> {
     }
 
     match &list[0] {
-        Sexp::Func { fun, .. } => {
+        Sexp::Func { fun, name } => {
+            
+            if *name == NOOP_NAME {
+                return fun(list[1..].to_vec());
+            }
+
             let mut args: Vec<Sexp> = Vec::new();
             for item in list[1..].iter().map(|sexp| eval(sexp.clone(), env)) {
                 args.push(item?)
             }
-            apply_builtin(*fun, args)
+            fun(args)
         }
         Sexp::Atom(atom @ Atom::Symbol(_)) => {
             // we replace initial symbol with its expanded form
@@ -59,8 +66,4 @@ fn eval_list(mut list: Vec<Sexp>, env: &mut Env) -> Result<Sexp> {
             list[0].get_kind_name()
         ))),
     }
-}
-
-fn apply_builtin(fun: fn(Vec<Sexp>) -> Result<Sexp>, args: Vec<Sexp>) -> Result<Sexp> {
-    fun(args)
 }
