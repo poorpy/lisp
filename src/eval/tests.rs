@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use super::{eval, RuntimeError};
 use crate::env::Env;
 use crate::parser::{Atom, Sexp};
@@ -12,7 +14,7 @@ fn non_symbol_atom_evals_to_itself() {
 #[test]
 fn empty_list_evals_to_nil() {
     let mut env = Env::new(None);
-    let sexp = Sexp::List(Vec::new());
+    let sexp = Sexp::List(VecDeque::new());
     assert_eq!(eval(sexp, &mut env), Ok(Sexp::Atom(Atom::Nil)))
 }
 

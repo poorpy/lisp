@@ -1,11 +1,13 @@
 #[cfg(test)]
 mod tests;
 
+use std::collections::VecDeque;
+
 use crate::eval::{Result, RuntimeError};
 use crate::parser::{Atom, Sexp};
 
 /// Returns arguments as `Sexp::List`
-pub fn list(args: Vec<Sexp>) -> Result<Sexp> {
+pub fn list(args: VecDeque<Sexp>) -> Result<Sexp> {
     if args.is_empty() {
         return Err(RuntimeError::WrongArgumentArity(args.len()));
     }
@@ -14,58 +16,64 @@ pub fn list(args: Vec<Sexp>) -> Result<Sexp> {
 }
 
 /// Returns head (first argument) of a list
-pub fn car(args: Vec<Sexp>) -> Result<Sexp> {
+pub fn car(mut args: VecDeque<Sexp>) -> Result<Sexp> {
     if args.len() != 1 {
         return Err(RuntimeError::WrongArgumentArity(args.len()));
     }
 
-    if let Sexp::Atom(Atom::Nil) = args[0] {
+    let sexp = args.pop_front().unwrap();
+
+    if let Sexp::Atom(Atom::Nil) = sexp {
         return Ok(Sexp::Atom(Atom::Nil));
     }
 
-    if let Sexp::List(list) = &args[0] {
+    if let Sexp::List(list) = &sexp {
         if list.is_empty() {
             return Ok(Sexp::Atom(Atom::Nil));
         }
 
-        return Ok(list[0].clone());
+        return Ok(sexp);
     }
 
     Err(RuntimeError::WrongArgumentKind(format!(
         "car expects list as an argument instead got: {}",
-        args[0].get_kind_name()
+        sexp.get_kind_name()
     )))
 }
 
 /// Returns tail (all but first argument) of list
-pub fn cdr(args: Vec<Sexp>) -> Result<Sexp> {
+pub fn cdr(mut args: VecDeque<Sexp>) -> Result<Sexp> {
     if args.len() != 1 {
         return Err(RuntimeError::WrongArgumentArity(args.len()));
     }
 
-    if let Sexp::Atom(Atom::Nil) = args[0] {
+    let sexp = args.pop_front().unwrap();
+
+    if let Sexp::Atom(Atom::Nil) = sexp {
         return Ok(Sexp::Atom(Atom::Nil));
     }
 
-    if let Sexp::List(list) = &args[0] {
+    if let Sexp::List(mut list) = sexp {
         if list.is_empty() {
             return Ok(Sexp::Atom(Atom::Nil));
         }
+        
+        list.pop_front();
 
-        return Ok(Sexp::List(list[1..].to_vec()));
+        return Ok(Sexp::List(list));
     }
 
     Err(RuntimeError::WrongArgumentKind(format!(
         "cdr expects list as an argument instead got: {}",
-        args[0].get_kind_name()
+        sexp.get_kind_name()
     )))
 }
 
 /// Returns unevaluated argument
-pub fn quote(mut args: Vec<Sexp>) -> Result<Sexp> {
+pub fn quote(mut args: VecDeque<Sexp>) -> Result<Sexp> {
     if args.len() != 1 {
         return Err(RuntimeError::WrongArgumentArity(args.len()));
     }
 
-    Ok(args.pop().unwrap())
+    Ok(args.pop_back().unwrap())
 }

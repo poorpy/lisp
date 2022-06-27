@@ -3,6 +3,8 @@ mod rewrite;
 #[cfg(test)]
 mod tests;
 
+use std::collections::VecDeque;
+
 use super::lexer::Token;
 use crate::eval::RuntimeError;
 
@@ -23,9 +25,9 @@ pub enum Atom {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Sexp {
     Atom(Atom),
-    List(Vec<Sexp>),
+    List(VecDeque<Sexp>),
     Func {
-        fun: fn(Vec<Sexp>) -> std::result::Result<Sexp, RuntimeError>,
+        fun: fn(VecDeque<Sexp>) -> std::result::Result<Sexp, RuntimeError>,
         name: &'static str,
     },
 }
@@ -42,14 +44,14 @@ impl Sexp {
 
 impl From<Vec<Sexp>> for Sexp {
     fn from(vec: Vec<Sexp>) -> Self {
-        Sexp::List(vec)
+        Sexp::List(VecDeque::from(vec))
     }
 }
 
 pub type Result<T> = std::result::Result<T, ParserError>;
 
-pub fn read_from_tokens(tokens: Vec<Token>) -> Result<Vec<Sexp>> {
-    let mut expressions: Vec<Sexp> = Vec::new();
+pub fn read_from_tokens(tokens: Vec<Token>) -> Result<VecDeque<Sexp>> {
+    let mut expressions: VecDeque<Sexp> = VecDeque::new();
 
     let mut tokens = tokens.into_iter();
     while let Some(token) = tokens.next() {
@@ -60,12 +62,12 @@ pub fn read_from_tokens(tokens: Vec<Token>) -> Result<Vec<Sexp>> {
                 })
             }
             Token::LParen => {
-                expressions.push(parse_list(&mut tokens)?);
+                expressions.push_back(parse_list(&mut tokens)?);
             }
             Token::String(token) => {
-                expressions.push(parse_string(token));
+                expressions.push_back(parse_string(token));
             }
-            Token::Symbol(token) => expressions.push(parse_symbol(token)),
+            Token::Symbol(token) => expressions.push_back(parse_symbol(token)),
         }
     }
 
@@ -96,7 +98,7 @@ fn parse_list<I>(tokens: &mut I) -> Result<Sexp>
 where
     I: Iterator<Item = Token>,
 {
-    let mut vec: Vec<Sexp> = Vec::new();
+    let mut vec: VecDeque<Sexp> = VecDeque::new();
     while let Some(token) = tokens.next() {
         match token {
             Token::RParen => {
@@ -106,12 +108,12 @@ where
                 return Ok(Sexp::List(vec));
             }
             Token::LParen => {
-                vec.push(parse_list(tokens)?);
+                vec.push_back(parse_list(tokens)?);
             }
             Token::String(token) => {
-                vec.push(parse_string(token));
+                vec.push_back(parse_string(token));
             }
-            Token::Symbol(token) => vec.push(parse_symbol(token)),
+            Token::Symbol(token) => vec.push_back(parse_symbol(token)),
         }
     }
     Err(ParserError {

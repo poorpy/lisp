@@ -1,10 +1,13 @@
 #[cfg(test)]
 mod tests;
 
+use std::collections::VecDeque;
+
 use crate::eval::{Result, RuntimeError};
 use crate::parser::{Atom, Sexp};
 
-pub fn is_atom(args: Vec<Sexp>) -> Result<Sexp> {
+
+pub fn is_atom(args: VecDeque<Sexp>) -> Result<Sexp> {
     if args.len() != 1 {
         return Err(RuntimeError::WrongArgumentArity(args.len()));
     }
@@ -15,7 +18,7 @@ pub fn is_atom(args: Vec<Sexp>) -> Result<Sexp> {
     }
 }
 
-pub fn is_list(args: Vec<Sexp>) -> Result<Sexp> {
+pub fn is_list(args: VecDeque<Sexp>) -> Result<Sexp> {
     if args.len() != 1 {
         return Err(RuntimeError::WrongArgumentArity(args.len()));
     }
@@ -26,7 +29,7 @@ pub fn is_list(args: Vec<Sexp>) -> Result<Sexp> {
     }
 }
 
-pub fn is_function(args: Vec<Sexp>) -> Result<Sexp> {
+pub fn is_function(args: VecDeque<Sexp>) -> Result<Sexp> {
     if args.len() != 1 {
         return Err(RuntimeError::WrongArgumentArity(args.len()));
     }
@@ -37,7 +40,7 @@ pub fn is_function(args: Vec<Sexp>) -> Result<Sexp> {
     }
 }
 
-pub fn is_string(args: Vec<Sexp>) -> Result<Sexp> {
+pub fn is_string(args: VecDeque<Sexp>) -> Result<Sexp> {
     if args.len() != 1 {
         return Err(RuntimeError::WrongArgumentArity(args.len()));
     }
@@ -48,7 +51,7 @@ pub fn is_string(args: Vec<Sexp>) -> Result<Sexp> {
     }
 }
 
-pub fn is_symbol(args: Vec<Sexp>) -> Result<Sexp> {
+pub fn is_symbol(args: VecDeque<Sexp>) -> Result<Sexp> {
     if args.len() != 1 {
         return Err(RuntimeError::WrongArgumentArity(args.len()));
     }
@@ -59,7 +62,7 @@ pub fn is_symbol(args: Vec<Sexp>) -> Result<Sexp> {
     }
 }
 
-pub fn is_number(args: Vec<Sexp>) -> Result<Sexp> {
+pub fn is_number(args: VecDeque<Sexp>) -> Result<Sexp> {
     if args.len() != 1 {
         return Err(RuntimeError::WrongArgumentArity(args.len()));
     }

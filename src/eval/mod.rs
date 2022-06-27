@@ -2,6 +2,8 @@
 #[cfg(test)]
 mod tests;
 
+use std::collections::VecDeque;
+
 use super::env::{Env, LookupError};
 use super::parser::{Atom, Sexp};
 
@@ -38,32 +40,33 @@ fn eval_atom(atom: Atom, env: &Env) -> Result<Sexp> {
     }
 }
 
-fn eval_list(mut list: Vec<Sexp>, env: &mut Env) -> Result<Sexp> {
+fn eval_list(mut list: VecDeque<Sexp>, env: &mut Env) -> Result<Sexp> {
     if list.is_empty() {
         return Ok(Sexp::Atom(Atom::Nil));
     }
 
-    match &list[0] {
+    let first = list.pop_front().unwrap();
+
+    match first {
         Sexp::Func { fun, name } => {
-            
-            if *name == NOOP_NAME {
-                return fun(list[1..].to_vec());
+            if name == NOOP_NAME {
+                return fun(list);
             }
 
-            let mut args: Vec<Sexp> = Vec::new();
-            for item in list[1..].iter().map(|sexp| eval(sexp.clone(), env)) {
-                args.push(item?)
+            let mut args: VecDeque<Sexp> = VecDeque::new();
+            for item in list.iter().map(|sexp| eval(sexp.clone(), env)) {
+                args.push_back(item?)
             }
             fun(args)
         }
         Sexp::Atom(atom @ Atom::Symbol(_)) => {
             // we replace initial symbol with its expanded form
-            list[0] = eval_atom(atom.clone(), env)?;
+            list.push_front(eval_atom(atom.clone(), env)?);
             eval_list(list, env)
         }
         _ => Err(RuntimeError::WrongArgumentKind(format!(
             "eval list, expected function, got: {}",
-            list[0].get_kind_name()
+            first.get_kind_name()
         ))),
     }
 }

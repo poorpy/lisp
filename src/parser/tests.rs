@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use crate::lexer::Token;
 
 use super::{read_from_tokens, Atom, ParserError, Sexp};
@@ -32,7 +34,7 @@ fn parser_parses_atom() {
     let result = read_from_tokens(tokens);
     assert_eq!(
         result,
-        Ok(vec![
+        Ok(VecDeque::from(vec![
             Sexp::Atom(Atom::Nil),
             Sexp::Atom(Atom::Nil),
             Sexp::Atom(Atom::Nil),
@@ -42,7 +44,7 @@ fn parser_parses_atom() {
             Sexp::Atom(Atom::String(String::from("text"))),
             Sexp::Atom(Atom::Number(1.0)),
             Sexp::Atom(Atom::Number(1.0))
-        ])
+        ]))
     )
 }
 
@@ -58,11 +60,11 @@ fn parser_parses_list() {
     let result = read_from_tokens(tokens);
     assert_eq!(
         result,
-        Ok(vec![Sexp::List(vec![
+        Ok(VecDeque::from(vec![Sexp::from(vec![
             Sexp::Atom(Atom::Nil),
             Sexp::Atom(Atom::Nil),
             Sexp::Atom(Atom::Nil),
-        ])])
+        ])]))
     )
 }
 
@@ -82,22 +84,22 @@ fn parser_rewrites_quotes() {
     let result = read_from_tokens(tokens);
     assert_eq!(
         result,
-        Ok(vec![
-            Sexp::List(vec![
+        Ok(VecDeque::from(vec![
+            Sexp::from(vec![
                 Sexp::Atom(Atom::Symbol(String::from("quote"))),
                 Sexp::Atom(Atom::Symbol(String::from("symbol"))),
             ]),
-            Sexp::List(vec![
+            Sexp::from(vec![
                 Sexp::Atom(Atom::Symbol(String::from("quote"))),
-                Sexp::List(vec![
+                Sexp::from(vec![
                     Sexp::Atom(Atom::Nil),
-                    Sexp::List(vec![
+                    Sexp::from(vec![
                         Sexp::Atom(Atom::Symbol(String::from("quote"))),
                         Sexp::Atom(Atom::Nil)
                     ])
                 ])
             ]),
             Sexp::Atom(Atom::Symbol(String::from("quote"))),
-        ])
+        ]))
     )
 }
