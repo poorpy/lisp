@@ -27,12 +27,12 @@ pub fn car(mut args: VecDeque<Sexp>) -> Result<Sexp> {
         return Ok(Sexp::Atom(Atom::Nil));
     }
 
-    if let Sexp::List(list) = &sexp {
+    if let Sexp::List(mut list) = sexp {
         if list.is_empty() {
             return Ok(Sexp::Atom(Atom::Nil));
         }
 
-        return Ok(sexp);
+        return Ok(list.pop_front().unwrap());
     }
 
     Err(RuntimeError::WrongArgumentKind(format!(
@@ -57,7 +57,7 @@ pub fn cdr(mut args: VecDeque<Sexp>) -> Result<Sexp> {
         if list.is_empty() {
             return Ok(Sexp::Atom(Atom::Nil));
         }
-        
+
         list.pop_front();
 
         return Ok(Sexp::List(list));
