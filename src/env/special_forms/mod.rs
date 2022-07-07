@@ -69,6 +69,54 @@ pub fn cdr(mut args: VecDeque<Sexp>) -> Result<Sexp> {
     )))
 }
 
+// Returns new slice with second arg pushed to back
+pub fn append(mut args: VecDeque<Sexp>) -> Result<Sexp> {
+    if args.len() != 2 {
+        return Err(RuntimeError::WrongArgumentArity(args.len()));
+    }
+
+    let sexp = args.pop_front().unwrap();
+    let appendee = args.pop_front().unwrap();
+
+    if let Sexp::List(mut list) = sexp {
+        list.push_back(appendee);
+        return Ok(Sexp::List(list));
+    }
+
+    if let Sexp::Atom(Atom::Nil) = sexp {
+        return Ok(Sexp::from(vec![appendee]));
+    }
+
+    Err(RuntimeError::WrongArgumentKind(format!(
+        "append expects list as first argument instead got: {}",
+        sexp.get_kind_name()
+    )))
+}
+
+// Returns new slice with second arg pushed to front
+pub fn prepend(mut args: VecDeque<Sexp>) -> Result<Sexp> {
+    if args.len() != 2 {
+        return Err(RuntimeError::WrongArgumentArity(args.len()));
+    }
+
+    let sexp = args.pop_front().unwrap();
+    let appendee = args.pop_front().unwrap();
+
+    if let Sexp::List(mut list) = sexp {
+        list.push_front(appendee);
+        return Ok(Sexp::List(list));
+    }
+
+    if let Sexp::Atom(Atom::Nil) = sexp {
+        return Ok(Sexp::from(vec![appendee]));
+    }
+
+    Err(RuntimeError::WrongArgumentKind(format!(
+        "append expects list as first argument instead got: {}",
+        sexp.get_kind_name()
+    )))
+}
+
 /// Returns unevaluated argument
 pub fn quote(mut args: VecDeque<Sexp>) -> Result<Sexp> {
     if args.len() != 1 {

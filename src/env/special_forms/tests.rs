@@ -4,6 +4,7 @@ use crate::eval::Result;
 use crate::eval::RuntimeError;
 use crate::parser::{Atom, Sexp};
 
+use super::{append, prepend};
 use super::{car, cdr, list};
 
 use rstest::rstest;
@@ -37,4 +38,30 @@ fn car_returns_head_of_a_list(#[case] input: Sexp, #[case] expected: Result<Sexp
 fn cdr_returns_tail_of_a_list(#[case] input: Sexp, #[case] expected: Result<Sexp>) {
     let args = VecDeque::from(vec![input]);
     assert_eq!(cdr(args), expected)
+}
+
+#[rstest]
+#[case(
+    VecDeque::from(vec![Sexp::Atom(Atom::Nil), Sexp::Atom(Atom::T)]),
+    Ok(Sexp::from(vec![Sexp::Atom(Atom::T)]))
+)]
+#[case(
+    VecDeque::from(vec![Sexp::from(vec![Sexp::Atom(Atom::Nil)]), Sexp::Atom(Atom::T)]),
+    Ok(Sexp::from(vec![Sexp::Atom(Atom::Nil), Sexp::Atom(Atom::T)]))
+)]
+fn append_pushes_arg_to_back(#[case] input: VecDeque<Sexp>, #[case] expected: Result<Sexp>) {
+    assert_eq!(append(input), expected)
+}
+
+#[rstest]
+#[case(
+    VecDeque::from(vec![Sexp::Atom(Atom::Nil), Sexp::Atom(Atom::T)]),
+    Ok(Sexp::from(vec![Sexp::Atom(Atom::T)]))
+)]
+#[case(
+    VecDeque::from(vec![Sexp::from(vec![Sexp::Atom(Atom::Nil)]), Sexp::Atom(Atom::T)]),
+    Ok(Sexp::from(vec![Sexp::Atom(Atom::T), Sexp::Atom(Atom::Nil)]))
+)]
+fn prepend_pushes_arg_to_front(#[case] input: VecDeque<Sexp>, #[case] expected: Result<Sexp>) {
+    assert_eq!(prepend(input), expected)
 }
