@@ -3,6 +3,6 @@
 pub enum Atom {
     Boolean(bool),
     Symbol(String),
-    // String(String),
-    // Number(f64),
+    String(String),
+    Number(f64),
 }

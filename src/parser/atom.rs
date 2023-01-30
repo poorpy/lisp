@@ -2,56 +2,81 @@
 
 use std::collections::HashSet;
 
-use nom::IResult;
-
-use crate::core;
-
 use nom::branch::alt;
-use nom::bytes::complete::{tag, take_till};
+use nom::bytes::complete::{escaped, tag, take_till};
+use nom::character::complete::one_of;
 use nom::combinator::map;
-use nom::Err::Error;
+use nom::number::complete::double;
+use nom::sequence::delimited;
+use nom::Err::Failure;
+use nom::{character, IResult};
+
+use crate::core::Atom;
 
 use super::ParserError;
 
-fn boolean(input: &str) -> IResult<&str, core::Atom> {
+fn atom(input: &str) -> IResult<&str, Atom, ParserError<&str>> {
+    alt((boolean, symbol, string, number))(input)
+}
+
+fn boolean(input: &str) -> IResult<&str, Atom, ParserError<&str>> {
     alt((
-        map(tag("false"), |_| core::Atom::Boolean(false)),
-        map(tag("true"), |_| core::Atom::Boolean(true)),
+        map(tag("false"), |_| Atom::Boolean(false)),
+        map(tag("true"), |_| Atom::Boolean(true)),
     ))(input)
 }
 
-fn symbol(input: &str) -> IResult<&str, core::Atom, ParserError<&str>> {
+fn symbol(input: &str) -> IResult<&str, Atom, ParserError<&str>> {
     let (rest, candidate): (&str, &str) = take_till(|c: char| c.is_whitespace())(input)?;
 
     let illegal = candidate
         .chars()
         .collect::<HashSet<char>>()
         .intersection(&HashSet::from_iter("(){},;.:'\"".chars()))
-        .cloned()
+        .copied()
         .collect::<HashSet<char>>();
 
     if !illegal.is_empty() {
-        return Err(Error(ParserError::SymbolContainsInvalid {
+        return Err(Failure(ParserError::SymbolContainsInvalid {
             symbol: candidate.to_owned(),
             illegal,
         }));
     }
 
-    Ok((rest, core::Atom::Symbol(candidate.to_owned())))
+    Ok((rest, Atom::Symbol(candidate.to_owned())))
+}
+
+fn string(input: &str) -> IResult<&str, Atom, ParserError<&str>> {
+    map(
+        delimited(
+            tag("\""),
+            escaped(
+                character::complete::none_of("\"\n\\"),
+                '\\',
+                one_of(r#""n\"#),
+            ),
+            tag("\""),
+        ),
+        |s: &str| Atom::String(s.to_owned()),
+    )(input)
+}
+
+fn number(input: &str) -> IResult<&str, Atom, ParserError<&str>> {
+    map(double, Atom::Number)(input)
 }
 
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
 
-    use crate::{core, parser::ParserError};
+    use crate::{core::Atom, parser::ParserError};
 
     use rstest::rstest;
 
     #[rstest]
-    #[case("true", core::Atom::Boolean(true))]
-    #[case("false", core::Atom::Boolean(false))]
-    fn test_parse_boolean(#[case] input: &str, #[case] expected: core::Atom) {
+    #[case("true", Atom::Boolean(true))]
+    #[case("false", Atom::Boolean(false))]
+    fn test_parse_boolean(#[case] input: &str, #[case] expected: Atom) {
         let result = super::boolean(input);
         assert_eq!(result.unwrap().1, expected)
     }
@@ -61,7 +86,7 @@ mod tests {
         let result = super::symbol("my_awesome-symbol123");
         assert_eq!(
             result.unwrap().1,
-            core::Atom::Symbol("my_awesome-symbol123".to_owned())
+            Atom::Symbol("my_awesome-symbol123".to_owned())
         )
     }
 
@@ -70,10 +95,20 @@ mod tests {
         let result = super::symbol("my(){},;.:'\"_awesome-symbol123");
         assert_eq!(
             result.unwrap_err(),
-            nom::Err::Error(ParserError::SymbolContainsInvalid {
+            nom::Err::Failure(ParserError::SymbolContainsInvalid {
                 symbol: "my(){},;.:'\"_awesome-symbol123".to_owned(),
                 illegal: HashSet::from_iter("(){},;.:'\"".chars()),
             }),
+        )
+    }
+
+    #[test]
+    fn test_parse_string() {
+        let result = super::string(r#""my cool and (){}\n\\\"\"string""#);
+
+        assert_eq!(
+            result.unwrap().1,
+            Atom::String(r#"my cool and (){}\n\\\"\"string"#.to_owned()),
         )
     }
 }
