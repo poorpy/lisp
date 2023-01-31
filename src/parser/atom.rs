@@ -3,13 +3,15 @@
 use std::collections::HashSet;
 
 use nom::branch::alt;
-use nom::bytes::complete::{escaped, tag, take_till};
-use nom::character::complete::one_of;
-use nom::combinator::map;
-use nom::number::complete::double;
-use nom::sequence::delimited;
-use nom::Err::Failure;
-use nom::{character, IResult};
+use nom::{
+    bytes::complete::{escaped, tag, take_till},
+    character::complete::{none_of, one_of},
+    combinator::map,
+    number::complete::double,
+    sequence::delimited,
+    Err::Failure,
+    IResult,
+};
 
 use crate::core::Atom;
 
@@ -50,11 +52,7 @@ fn string(input: &str) -> IResult<&str, Atom, ParserError<&str>> {
     map(
         delimited(
             tag("\""),
-            escaped(
-                character::complete::none_of("\"\n\\"),
-                '\\',
-                one_of(r#""n\"#),
-            ),
+            escaped(none_of("\"\n\\"), '\\', one_of(r#""n\"#)),
             tag("\""),
         ),
         |s: &str| Atom::String(s.to_owned()),

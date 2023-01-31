@@ -1,0 +1,21 @@
+escape = _{ "\\" ~ ("\"" | "\\" | "/" | "n" | "r" | "t") }
+string = @{ "\"" ~ (escape | !("\"" | "\\") ~ ANY)* ~ "\"" }
+
+digit = {'0' .. '9'}
+number = @{"-"? ~ digit+ ~ ("." ~ digit+)?}
+
+op_true = {"true"}
+op_false = {"false"}
+boolean = _{op_true | op_false}
+
+symbol = @{ ('a' .. 'z' | 'A' .. 'Z' ) ~ ('a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | "?" | "-" | "_" )*}
+
+atom = {  string | number | boolean | symbol }
+
+quote = { "'" ~ expr }
+
+cond = { "(" ~ " "? ~ "cond" ~ " " ~ cond_pair ~ (" " ~ cond_pair) ~ " "? ~ ")"}
+cond_pair = {"(" ~ " "? ~ expr ~ " " ~ expr ~ " "? ~ ")"}
+aplication = { "(" ~ " "? ~ expr ~(" " ~ expr)* ~ " "? ~ ")"}
+
+expr = _{ cond | atom | aplication | quote  }
