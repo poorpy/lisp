@@ -8,6 +8,7 @@ authors = ["Bartosz Marczyński <marczynski.bartosz@gmail.com>"]
 
 [dependencies]
 anyhow = "1.0.68"
-nom = "7.1.3"
+pest = { version = "2.5.4", features = ["std", "thiserror", "pretty-print"] }
+pest_derive = "2.5.4"
 rstest = "0.14.0"
 thiserror = "1.0.38"

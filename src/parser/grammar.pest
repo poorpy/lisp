@@ -1,21 +1,22 @@
-escape = _{ "\\" ~ ("\"" | "\\" | "/" | "n" | "r" | "t") }
+COMMENT = _{ ";" ~ (!NEWLINE ~ ANY)* ~ NEWLINE?}
+WHITESPACE = _{(" "| NEWLINE)}
+
+number = @{ int }
+    int = { ("+" | "-")? ~ digit }
+    digit = { '0' .. '9' }
+
+symbol = @{ keyword | identifier }
+    keyword = { "let" | "+" | "-" | "*" | "/" | "%" | "^" | "=" | "<" | ">" | "!" }
+    identifier = { letter ~ (letter | "?" | "_" | "-")* }
+    letter = { 'a' .. 'z' | 'A' .. 'Z' }
+
 string = @{ "\"" ~ (escape | !("\"" | "\\") ~ ANY)* ~ "\"" }
+    escape = _{ "\\" ~ ("\"" | "\\" | "/" | "n" | "r" | "t") }
 
-digit = {'0' .. '9'}
-number = @{"-"? ~ digit+ ~ ("." ~ digit+)?}
+sexpr = { "(" ~ expr* ~ ")" }
 
-op_true = {"true"}
-op_false = {"false"}
-boolean = _{op_true | op_false}
+qexpr = { "{" ~ expr* ~ "}" }
 
-symbol = @{ ('a' .. 'z' | 'A' .. 'Z' ) ~ ('a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | "?" | "-" | "_" )*}
+expr = { number | symbol | string | sexpr | qexpr }
 
-atom = {  string | number | boolean | symbol }
-
-quote = { "'" ~ expr }
-
-cond = { "(" ~ " "? ~ "cond" ~ " " ~ cond_pair ~ (" " ~ cond_pair) ~ " "? ~ ")"}
-cond_pair = {"(" ~ " "? ~ expr ~ " " ~ expr ~ " "? ~ ")"}
-aplication = { "(" ~ " "? ~ expr ~(" " ~ expr)* ~ " "? ~ ")"}
-
-expr = _{ cond | atom | aplication | quote  }
+lisp = { SOI ~ (COMMENT| expr)* ~ EOI }
