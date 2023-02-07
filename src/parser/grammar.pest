@@ -2,13 +2,13 @@ COMMENT = _{ ";" ~ (!NEWLINE ~ ANY)* ~ NEWLINE?}
 WHITESPACE = _{(" "| NEWLINE)}
 
 number = @{ int }
-    int = { ("+" | "-")? ~ digit }
+    int = { ("+" | "-")? ~ digit+ }
     digit = { '0' .. '9' }
 
 symbol = @{ keyword | identifier }
     keyword = { "let" | "+" | "-" | "*" | "/" | "%" | "^" | "=" | "<" | ">" | "!" }
     identifier = { letter ~ (letter | "?" | "_" | "-")* }
-    letter = { 'a' .. 'z' | 'A' .. 'Z' }
+    letter = _{ 'a' .. 'z' | 'A' .. 'Z' }
 
 string = @{ "\"" ~ (escape | !("\"" | "\\") ~ ANY)* ~ "\"" }
     escape = _{ "\\" ~ ("\"" | "\\" | "/" | "n" | "r" | "t") }
