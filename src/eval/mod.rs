@@ -67,9 +67,9 @@ impl Default for Env {
 
 pub fn eval(expr: Expr, env: &mut Env) -> Result<Expr> {
     match expr {
-        Expr::Int(_) | Expr::Str(_) => Ok(expr),
+        Expr::Int(_) | Expr::Str(_) | Expr::Func { .. } => Ok(expr),
         Expr::Symbol(s) => Ok(env.data.get(&s).unwrap().clone()),
-        Expr::Func { .. } => Ok(expr),
+        Expr::QExpr(vec) => Ok(Expr::SExpr(vec)),
         Expr::SExpr(vec) => {
             let evaluated = vec
                 .into_iter()
@@ -84,7 +84,6 @@ pub fn eval(expr: Expr, env: &mut Env) -> Result<Expr> {
                 actual: "whatever".to_string(),
             })
         }
-        _ => unimplemented!(),
     }
 }
 
