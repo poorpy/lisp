@@ -1,3 +1,4 @@
+mod env;
 mod eval;
 mod parser;
 

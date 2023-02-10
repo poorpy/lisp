@@ -16,7 +16,8 @@ pub enum Error {
     InvalidType { expected: String, actual: String },
 }
 
-type Builtin = fn(Vec<Expr>) -> Result<Expr>;
+pub type Result<T> = std::result::Result<T, Error>;
+pub type Builtin = fn(Vec<Expr>) -> Result<Expr>;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Expr {
@@ -40,8 +41,6 @@ impl From<Ast> for Expr {
         }
     }
 }
-
-type Result<T> = std::result::Result<T, Error>;
 
 pub struct Env {
     pub data: HashMap<String, Expr>,
