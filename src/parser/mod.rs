@@ -35,7 +35,6 @@ pub enum Ast {
     Symbol(String),
     SExpr(Vec<Ast>),
     QExpr(Vec<Ast>),
-    Program(Vec<Ast>),
 }
 
 pub fn read(parsed: Pair<Rule>) -> Result<Ast, Error> {
@@ -49,7 +48,6 @@ pub fn read(parsed: Pair<Rule>) -> Result<Ast, Error> {
     let span = parsed.clone().as_span().as_str();
 
     match parsed.as_rule() {
-        Rule::lisp => Ok(Ast::Program(into_inner_vec(parsed)?)),
         Rule::sexpr => Ok(Ast::SExpr(into_inner_vec(parsed)?)),
         Rule::qexpr => Ok(Ast::QExpr(into_inner_vec(parsed)?)),
         Rule::expr => {

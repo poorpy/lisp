@@ -1,9 +1,8 @@
 mod eval;
 mod parser;
 
+use eval::{Env, Expr};
 use pest::Parser;
-
-use crate::parser::Ast;
 
 fn main() {
     let input = std::fs::read_to_string("input.lisp").expect("cannot read file");
@@ -11,12 +10,8 @@ fn main() {
         parser::LispParser::parse(parser::Rule::lisp, &input).unwrap_or_else(|e| panic!("{}", e));
 
     for pair in pairs {
-        let done = parser::read(pair);
-        println!("{done:?}");
-        if let Ok(Ast::Program(vec)) = done {
-            for ast in vec {
-                println!("{:?}", eval::eval(ast));
-            }
+        if let Ok(ast) = parser::read(pair) {
+            println!("{:?}", eval::eval(Expr::from(ast), &mut Env::default()));
         }
     }
 }

@@ -19,4 +19,4 @@ qexpr = { "{" ~ expr* ~ "}" }
 
 expr = { number | symbol | string | sexpr | qexpr }
 
-lisp = { SOI ~ (COMMENT| expr)* ~ EOI }
+lisp = _{ SOI ~ (COMMENT| expr)* ~ EOI }

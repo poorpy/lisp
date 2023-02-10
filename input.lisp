@@ -12,13 +12,15 @@
 
 "hello world"
 
-symbol
+add
 
-(
- let
- some
- "stuff"
-)
+(add 1 2 3)
 
-; line below is quoted expr
-{ let this "value" }
+; (
+;  let
+;  some
+;  "stuff"
+; )
+;
+; ; line below is quoted expr
+; { let this "value" }
