@@ -16,6 +16,10 @@ add
 
 (add 1 2 3)
 
+(let x 21)
+
+x
+
 ; (
 ;  let
 ;  some

@@ -6,7 +6,7 @@ number = @{ int }
     digit = { '0' .. '9' }
 
 symbol = @{ keyword | identifier }
-    keyword = { "let" | "+" | "-" | "*" | "/" | "%" | "^" | "=" | "<" | ">" | "!" }
+    keyword = { "+" | "-" | "*" | "/" | "%" | "^" | "=" | "<" | ">" | "!" }
     identifier = { letter ~ (letter | "?" | "_" | "-")* }
     letter = _{ 'a' .. 'z' | 'A' .. 'Z' }
 
@@ -17,6 +17,8 @@ sexpr = { "(" ~ expr* ~ ")" }
 
 qexpr = { "{" ~ expr* ~ "}" }
 
-expr = { number | symbol | string | sexpr | qexpr }
+binding = { "(" ~ "let" ~ symbol ~ expr ~ ")" }
+
+expr = { binding | number | symbol | string | sexpr | qexpr }
 
 lisp = _{ SOI ~ (COMMENT| expr)* ~ EOI }

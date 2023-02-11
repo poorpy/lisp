@@ -2,7 +2,8 @@ mod env;
 mod eval;
 mod parser;
 
-use eval::{Env, Expr};
+use env::Env;
+use eval::Expr;
 use pest::Parser;
 
 fn main() {
@@ -10,9 +11,14 @@ fn main() {
     let pairs =
         parser::LispParser::parse(parser::Rule::lisp, &input).unwrap_or_else(|e| panic!("{}", e));
 
+    let mut env = Env::default();
+
     for pair in pairs {
-        if let Ok(ast) = parser::read(pair) {
-            println!("{:?}", eval::eval(Expr::from(ast), &mut Env::default()));
+        match parser::read(pair) {
+            Ok(ast) => {
+                println!("{:?}", eval::eval(Expr::from(ast), &mut env));
+            }
+            Err(e) => println!("{e:?}"),
         }
     }
 }

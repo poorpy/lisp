@@ -1,11 +1,9 @@
 #![allow(dead_code)]
 mod builtin;
 
-use std::collections::HashMap;
-
 use thiserror::Error;
 
-use crate::parser::Ast;
+use crate::{env, parser::Ast};
 
 #[derive(Debug, Error, PartialEq, Clone)]
 pub enum Error {
@@ -28,6 +26,8 @@ pub enum Expr {
     QExpr(Vec<Expr>),
     // TODO: impl PartialEq with builtins accepting slices
     Func { name: String, fun: Builtin },
+
+    Binding { symbol: String, expr: Box<Expr> },
 }
 
 impl From<Ast> for Expr {
@@ -38,36 +38,18 @@ impl From<Ast> for Expr {
             Ast::Symbol(s) => Self::Symbol(s),
             Ast::SExpr(v) => Self::SExpr(v.into_iter().map(Self::from).collect()),
             Ast::QExpr(v) => Self::QExpr(v.into_iter().map(Self::from).collect()),
+            Ast::Binding { symbol, expr } => Self::Binding {
+                symbol,
+                expr: Box::new(Self::from(*expr)),
+            },
         }
     }
 }
 
-pub struct Env {
-    pub data: HashMap<String, Expr>,
-}
-
-impl Default for Env {
-    fn default() -> Self {
-        let mut env = Self {
-            data: HashMap::new(),
-        };
-
-        env.data.insert(
-            "add".to_string(),
-            Expr::Func {
-                name: "add".to_string(),
-                fun: builtin::add,
-            },
-        );
-
-        env
-    }
-}
-
-pub fn eval(expr: Expr, env: &mut Env) -> Result<Expr> {
+pub fn eval(expr: Expr, env: &mut env::Env) -> Result<Expr> {
     match expr {
         Expr::Int(_) | Expr::Str(_) | Expr::Func { .. } => Ok(expr),
-        Expr::Symbol(s) => Ok(env.data.get(&s).unwrap().clone()),
+        Expr::Symbol(s) => Ok(env.get(&s).unwrap()),
         Expr::QExpr(vec) => Ok(Expr::SExpr(vec)),
         Expr::SExpr(vec) => {
             let evaluated = vec
@@ -82,6 +64,10 @@ pub fn eval(expr: Expr, env: &mut Env) -> Result<Expr> {
                 expected: "function".to_string(),
                 actual: "whatever".to_string(),
             })
+        }
+        Expr::Binding { symbol, expr } => {
+            env.insert(symbol, (*expr).clone());
+            Ok(*expr)
         }
     }
 }

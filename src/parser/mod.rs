@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+use itertools::Itertools;
 use pest::iterators::Pair;
 use pest_derive::Parser;
 
@@ -25,7 +26,7 @@ pub enum Error {
     MissingInt(String),
 
     #[error("unexpected token: {0:?}")]
-    Unit(Rule),
+    UnexpectedToken(Rule),
 }
 
 #[derive(Debug, Clone)]
@@ -35,6 +36,7 @@ pub enum Ast {
     Symbol(String),
     SExpr(Vec<Ast>),
     QExpr(Vec<Ast>),
+    Binding { symbol: String, expr: Box<Ast> },
 }
 
 pub fn read(parsed: Pair<Rule>) -> Result<Ast, Error> {
@@ -50,6 +52,16 @@ pub fn read(parsed: Pair<Rule>) -> Result<Ast, Error> {
     match parsed.as_rule() {
         Rule::sexpr => Ok(Ast::SExpr(into_inner_vec(parsed)?)),
         Rule::qexpr => Ok(Ast::QExpr(into_inner_vec(parsed)?)),
+        Rule::binding => {
+            let (symbol, expr) = parsed
+                .into_inner()
+                .next_tuple()
+                .ok_or(Error::MissingExpr(span.to_string()))?;
+            Ok(Ast::Binding {
+                symbol: symbol.as_span().as_str().to_string(),
+                expr: Box::new(read(expr)?),
+            })
+        }
         Rule::expr => {
             let inner = parsed
                 .into_inner()
@@ -61,6 +73,6 @@ pub fn read(parsed: Pair<Rule>) -> Result<Ast, Error> {
         //string without outer quotes
         Rule::string => Ok(Ast::Str(span[1..span.len() - 1].to_string())),
         Rule::symbol => Ok(Ast::Symbol(span.to_string())),
-        _ => Err(Error::Unit(parsed.as_rule())),
+        _ => Err(Error::UnexpectedToken(parsed.as_rule())),
     }
 }

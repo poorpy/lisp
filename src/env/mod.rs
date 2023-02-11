@@ -23,6 +23,14 @@ impl<'a> Env<'a> {
             outer: Some(outer),
         }
     }
+
+    pub fn insert(&mut self, symbol: String, expr: Expr) {
+        self.data.insert(symbol, expr);
+    }
+
+    pub fn get(&self, symbol: &str) -> Option<Expr> {
+        self.data.get(symbol).cloned()
+    }
 }
 
 impl<'a> Default for Env<'a> {
