@@ -22,11 +22,7 @@ x
 
 {{ a b c d}}
 
-; (
-;  let
-;  some
-;  "stuff"
-; )
-;
-; ; line below is quoted expr
+(sub 1 2 3)
+
+; line below is quoted expr
 ; { let this "value" }

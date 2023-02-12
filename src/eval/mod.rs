@@ -1,5 +1,4 @@
 #![allow(dead_code)]
-mod builtin;
 
 use std::fmt;
 
@@ -14,6 +13,13 @@ pub enum Error {
 
     #[error("type mismatch expected: {expected:?} got: {actual:?}")]
     InvalidType { expected: String, actual: String },
+
+    #[error("function {name} expected {expected} arguments instead got {actual}")]
+    BadArity {
+        name: String,
+        expected: usize,
+        actual: usize,
+    },
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -83,7 +89,7 @@ impl fmt::Display for Expr {
                 let repr = space_separated(vec);
                 write!(f, "{{ {repr} }}")
             }
-            Self::Func { name, .. } => write!(f, "builtin: {name}"),
+            Self::Func { name, .. } => write!(f, "{name}"),
             Self::Binding { symbol, expr } => write!(f, "( let {symbol} {expr} )"),
         }
     }

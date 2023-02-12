@@ -52,6 +52,9 @@ impl<'a> Default for Env<'a> {
         let mut env = Self::new();
 
         add_func_to_env!("add", mathop::add, env);
+        add_func_to_env!("sub", mathop::sub, env);
+        add_func_to_env!("mul", mathop::mul, env);
+        add_func_to_env!("div", mathop::div, env);
 
         env
     }
