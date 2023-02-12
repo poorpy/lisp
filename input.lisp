@@ -20,6 +20,8 @@ add
 
 x
 
+{{ a b c d}}
+
 ; (
 ;  let
 ;  some

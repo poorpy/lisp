@@ -1,6 +1,8 @@
+mod mathop;
+
 use std::collections::HashMap;
 
-use crate::eval::{Error, Expr, Result};
+use crate::eval::Expr;
 
 #[allow(dead_code)]
 pub struct Env<'a> {
@@ -33,34 +35,24 @@ impl<'a> Env<'a> {
     }
 }
 
+macro_rules! add_func_to_env {
+    ($ name : expr, $ func : expr, $ env : expr) => {
+        $env.data.insert(
+            $name.to_string(),
+            Expr::Func {
+                fun: $func,
+                name: $name,
+            },
+        )
+    };
+}
+
 impl<'a> Default for Env<'a> {
     fn default() -> Self {
         let mut env = Self::new();
 
-        env.data.insert(
-            "add".to_string(),
-            Expr::Func {
-                name: "add".to_string(),
-                fun: add,
-            },
-        );
+        add_func_to_env!("add", mathop::add, env);
 
         env
     }
-}
-
-pub fn add(args: Vec<Expr>) -> Result<Expr> {
-    let mut result = 0;
-    for arg in args {
-        if let Expr::Int(i) = arg {
-            result += i;
-        } else {
-            return Err(Error::InvalidType {
-                expected: String::new(),
-                actual: String::new(),
-            });
-        }
-    }
-
-    Ok(Expr::Int(result))
 }

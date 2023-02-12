@@ -15,9 +15,10 @@ fn main() {
 
     for pair in pairs {
         match parser::read(pair) {
-            Ok(ast) => {
-                println!("{:?}", eval::eval(Expr::from(ast), &mut env));
-            }
+            Ok(ast) => match eval::eval(Expr::from(ast), &mut env) {
+                Ok(expr) => println!("{expr}"),
+                Err(e) => println!("{e:?}"),
+            },
             Err(e) => println!("{e:?}"),
         }
     }
