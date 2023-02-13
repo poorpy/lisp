@@ -20,6 +20,9 @@ pub enum Error {
         expected: usize,
         actual: usize,
     },
+
+    #[error("tried to divide by zero")]
+    DivideByZero,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

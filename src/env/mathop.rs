@@ -59,8 +59,12 @@ pub fn div(args: Vec<Expr>) -> Result<Expr> {
         .ok_or(Error::BadArity {
             name: "div".to_owned(),
             expected: 2,
-            actual: 1 + ints.len(),
+            actual: ints.len(),
         })?;
+
+    if divisor == 0 {
+        return Err(Error::DivideByZero);
+    }
 
     Ok(Expr::Int(dividend / divisor))
 }

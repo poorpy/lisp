@@ -22,7 +22,7 @@ x
 
 {{ a b c d}}
 
-(sub 1 2 3)
+(div 1 1)
 
 ; line below is quoted expr
 ; { let this "value" }
