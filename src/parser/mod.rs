@@ -36,7 +36,14 @@ pub enum Ast {
     Symbol(String),
     SExpr(Vec<Ast>),
     QExpr(Vec<Ast>),
-    Binding { symbol: String, expr: Box<Ast> },
+    Binding {
+        symbol: String,
+        expr: Box<Ast>,
+    },
+    Lambda {
+        formals: Vec<String>,
+        body: Box<Ast>,
+    },
 }
 
 pub fn read(parsed: Pair<Rule>) -> Result<Ast, Error> {
@@ -61,6 +68,9 @@ pub fn read(parsed: Pair<Rule>) -> Result<Ast, Error> {
                 symbol: symbol.as_span().as_str().to_string(),
                 expr: Box::new(read(expr)?),
             })
+        }
+        Rule::lambda => {
+            todo!()
         }
         Rule::expr => {
             let inner = parsed

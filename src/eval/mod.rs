@@ -35,8 +35,18 @@ pub enum Expr {
     Symbol(String),
     SExpr(Vec<Expr>),
     QExpr(Vec<Expr>),
-    Func { name: &'static str, fun: Builtin },
-    Binding { symbol: String, expr: Box<Expr> },
+    Func {
+        name: &'static str,
+        fun: Builtin,
+    },
+    Binding {
+        symbol: String,
+        expr: Box<Expr>,
+    },
+    Lambda {
+        formals: Vec<String>,
+        body: Box<Expr>,
+    },
 }
 
 impl Expr {
@@ -49,6 +59,7 @@ impl Expr {
             Self::QExpr(_) => "q-expression",
             Self::Func { .. } => "builtin",
             Self::Binding { .. } => "binding",
+            Self::Lambda { .. } => "lambda",
         }
     }
 }
@@ -65,13 +76,17 @@ impl From<Ast> for Expr {
                 symbol,
                 expr: Box::new(Self::from(*expr)),
             },
+            Ast::Lambda { formals, body } => Self::Lambda {
+                formals,
+                body: Box::new(Self::from(*body)),
+            },
         }
     }
 }
 
 impl fmt::Display for Expr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fn space_separated(vec: &Vec<Expr>) -> String {
+        fn space_separated<T: ToString>(vec: &Vec<T>) -> String {
             let mut space_separated = String::new();
             for expr in vec {
                 space_separated.push_str(&expr.to_string());
@@ -94,6 +109,10 @@ impl fmt::Display for Expr {
             }
             Self::Func { name, .. } => write!(f, "{name}"),
             Self::Binding { symbol, expr } => write!(f, "( let {symbol} {expr} )"),
+            Self::Lambda { formals, body } => {
+                let args = space_separated(formals);
+                write!(f, "( lambda ( {args} ) {body} )")
+            }
         }
     }
 }
@@ -122,6 +141,7 @@ pub fn eval(expr: Expr, env: &mut env::Env) -> Result<Expr> {
             env.insert(symbol, (*expr).clone());
             Ok(*expr)
         }
+        Expr::Lambda { .. } => Err(Error::Unit),
     }
 }
 

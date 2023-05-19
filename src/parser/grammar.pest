@@ -19,6 +19,8 @@ qexpr = { "{" ~ expr* ~ "}" }
 
 binding = { "(" ~ "let" ~ symbol ~ expr ~ ")" }
 
+lambda = { "(" ~ "lambda" ~ "(" ~ identifier* ~ ")" ~ expr ~ ")" }
+
 expr = { binding | number | symbol | string | sexpr | qexpr }
 
 lisp = _{ SOI ~ (COMMENT| expr)* ~ EOI }
