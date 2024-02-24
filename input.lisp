@@ -20,9 +20,9 @@ add
 
 x
 
-{{ a b c d}}
+{{ a b c d }}
 
 (div 1 1)
 
 ; line below is quoted expr
-; { let this "value" }
+{ let this "value" }

@@ -4,6 +4,7 @@ mod parser;
 
 use env::Env;
 use eval::Expr;
+use parser::Rule;
 use pest::Parser;
 
 fn main() {
@@ -14,6 +15,9 @@ fn main() {
     let mut env = Env::default();
 
     for pair in pairs {
+        if pair.as_rule() == Rule::EOI {
+            break;
+        }
         match parser::read(pair) {
             Ok(ast) => match eval::eval(Expr::from(ast), &mut env) {
                 Ok(expr) => println!("{expr}"),
