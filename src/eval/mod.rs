@@ -12,7 +12,10 @@ pub enum Error {
     Unit,
 
     #[error("type mismatch expected: {expected:?} got: {actual:?}")]
-    InvalidType { expected: String, actual: String },
+    InvalidType {
+        expected: &'static str,
+        actual: &'static str,
+    },
 
     #[error("function {name} expected {expected} arguments instead got {actual}")]
     BadArity {
@@ -133,8 +136,8 @@ pub fn eval(expr: Expr, env: &mut env::Env) -> Result<Expr> {
             }
 
             Err(Error::InvalidType {
-                expected: "builtin".to_string(),
-                actual: evaluated[0].typename().to_string(),
+                expected: "builtin",
+                actual: evaluated[0].typename(),
             })
         }
         Expr::Binding { symbol, expr } => {

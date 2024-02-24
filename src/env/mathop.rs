@@ -6,10 +6,10 @@ fn into_ints(vec: Vec<Expr>) -> Result<Vec<i64>> {
             if let Expr::Int(i) = e {
                 Ok(i)
             } else {
-                return Err(Error::InvalidType {
-                    expected: Expr::Int(0).typename().to_string(),
-                    actual: e.typename().to_string(),
-                });
+                Err(Error::InvalidType {
+                    expected: Expr::Int(0).typename(),
+                    actual: e.typename(),
+                })
             }
         })
         .collect::<Result<Vec<i64>>>()
