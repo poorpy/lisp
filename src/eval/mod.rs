@@ -4,7 +4,10 @@ use std::fmt;
 
 use thiserror::Error;
 
-use crate::{env, parser::Ast};
+use crate::{
+    env::{self, Env},
+    parser::Ast,
+};
 
 #[derive(Debug, Error, PartialEq, Clone)]
 pub enum Error {
@@ -122,7 +125,7 @@ impl fmt::Display for Expr {
 
 pub fn eval(expr: Expr, env: &mut env::Env) -> Result<Expr> {
     match expr {
-        Expr::Int(_) | Expr::Str(_) | Expr::Func { .. } => Ok(expr),
+        Expr::Int(_) | Expr::Str(_) | Expr::Func { .. } | Expr::Lambda { .. } => Ok(expr),
         Expr::Symbol(s) => Ok(env.get(&s).unwrap()),
         Expr::QExpr(vec) => Ok(Expr::SExpr(vec)),
         Expr::SExpr(vec) => {
@@ -135,8 +138,25 @@ pub fn eval(expr: Expr, env: &mut env::Env) -> Result<Expr> {
                 return apply(fun, evaluated[1..].to_vec());
             }
 
+            if let Expr::Lambda { formals, body } = &evaluated[0] {
+                if evaluated[1..].len() != formals.len() {
+                    return Err(Error::BadArity {
+                        name: "lambda".to_string(),
+                        expected: formals.len(),
+                        actual: evaluated[1..].len(),
+                    });
+                }
+
+                let mut lambda_env = Env::with_outer(env);
+                for (formal, expr) in formals.iter().zip(evaluated[1..].iter()) {
+                    lambda_env.insert(formal.clone(), expr.clone())
+                }
+
+                return eval(*(*body).clone(), &mut lambda_env);
+            }
+
             Err(Error::InvalidType {
-                expected: "builtin",
+                expected: "builtin or lambda",
                 actual: evaluated[0].typename(),
             })
         }
@@ -144,7 +164,6 @@ pub fn eval(expr: Expr, env: &mut env::Env) -> Result<Expr> {
             env.insert(symbol, (*expr).clone());
             Ok(*expr)
         }
-        Expr::Lambda { .. } => Err(Error::Unit),
     }
 }
 

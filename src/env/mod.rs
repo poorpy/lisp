@@ -31,7 +31,15 @@ impl<'a> Env<'a> {
     }
 
     pub fn get(&self, symbol: &str) -> Option<Expr> {
-        self.data.get(symbol).cloned()
+        if let Some(expr) = self.data.get(symbol).cloned() {
+            return Some(expr);
+        }
+
+        if let Some(outer) = self.outer {
+            return outer.get(symbol);
+        }
+
+        None
     }
 }
 

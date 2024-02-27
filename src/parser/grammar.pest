@@ -1,5 +1,6 @@
 COMMENT = _{ ";" ~ (!NEWLINE ~ ANY)* ~ NEWLINE?}
 WHITESPACE = _{(" "| NEWLINE)}
+eoi = _{ !ANY }
 
 number = @{ int }
     int = { ("+" | "-")? ~ digit+ }
@@ -7,7 +8,7 @@ number = @{ int }
 
 symbol = @{ keyword | identifier }
     keyword = { "+" | "-" | "*" | "/" | "%" | "^" | "=" | "<" | ">" | "!" }
-    identifier = { letter ~ (letter | "?" | "_" | "-")* }
+    identifier = @{ letter ~ (letter | "?" | "_" | "-")* }
     letter = _{ 'a' .. 'z' | 'A' .. 'Z' }
 
 string = @{ "\"" ~ (escape | !("\"" | "\\") ~ ANY)* ~ "\"" }
@@ -21,6 +22,6 @@ binding = { "(" ~ "let" ~ symbol ~ expr ~ ")" }
 
 lambda = { "(" ~ "lambda" ~ "(" ~ identifier* ~ ")" ~ expr ~ ")" }
 
-expr = { binding | number | symbol | string | sexpr | qexpr }
+expr = { binding | number | symbol | string | lambda | sexpr | qexpr }
 
-lisp = _{ SOI ~ (COMMENT| expr)* ~ EOI }
+lisp = _{ SOI ~ (COMMENT| expr)* ~ eoi }

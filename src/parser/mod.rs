@@ -25,6 +25,12 @@ pub enum Error {
     #[error("expected int got: {0}")]
     MissingInt(String),
 
+    #[error("missing function body: {0}")]
+    MissingBody(String),
+
+    #[error("only symbols are allowed in formals block: {0}")]
+    InvalidFormals(String),
+
     #[error("unexpected token: {0:?}")]
     UnexpectedToken(Rule),
 }
@@ -49,7 +55,7 @@ pub enum Ast {
 pub fn read(parsed: Pair<Rule>) -> Result<Ast, Error> {
     fn into_inner_vec(pair: Pair<Rule>) -> Result<Vec<Ast>, Error> {
         pair.into_inner()
-            .filter(|p| !matches!(p.as_rule(), Rule::EOI | Rule::COMMENT))
+            .filter(|p| !matches!(p.as_rule(), Rule::COMMENT))
             .map(read)
             .collect::<Result<Vec<_>, Error>>()
     }
@@ -70,7 +76,21 @@ pub fn read(parsed: Pair<Rule>) -> Result<Ast, Error> {
             })
         }
         Rule::lambda => {
-            todo!()
+            let formals: Vec<String> = parsed
+                .clone()
+                .into_inner()
+                .filter(|p| matches!(p.as_rule(), Rule::identifier))
+                .map(|p| p.as_str().to_string())
+                .collect();
+            let expr = parsed
+                .into_inner()
+                .find(|p| p.as_rule() != Rule::identifier)
+                .ok_or(Error::MissingBody(span.to_string()))?;
+
+            Ok(Ast::Lambda {
+                formals,
+                body: Box::new(read(expr)?),
+            })
         }
         Rule::expr => {
             let inner = parsed
