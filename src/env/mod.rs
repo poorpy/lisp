@@ -1,20 +1,53 @@
-mod predicates;
-mod special_forms;
+mod mathop;
 
 use std::collections::HashMap;
 
-use crate::env::{
-    predicates::{is_atom, is_function, is_list, is_number, is_string, is_symbol},
-    special_forms::{car, cdr, list, quote, append, prepend},
-};
+use crate::eval::Expr;
 
-use super::parser::Sexp;
+#[allow(dead_code)]
+pub struct Env<'a> {
+    data: HashMap<String, Expr>,
+    outer: Option<&'a Env<'a>>,
+}
+
+impl<'a> Env<'a> {
+    fn new() -> Self {
+        Self {
+            data: HashMap::new(),
+            outer: None,
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn with_outer(outer: &'a Env<'a>) -> Self {
+        Self {
+            data: HashMap::new(),
+            outer: Some(outer),
+        }
+    }
+
+    pub fn insert(&mut self, symbol: String, expr: Expr) {
+        self.data.insert(symbol, expr);
+    }
+
+    pub fn get(&self, symbol: &str) -> Option<Expr> {
+        if let Some(expr) = self.data.get(symbol).cloned() {
+            return Some(expr);
+        }
+
+        if let Some(outer) = self.outer {
+            return outer.get(symbol);
+        }
+
+        None
+    }
+}
 
 macro_rules! add_func_to_env {
     ($ name : expr, $ func : expr, $ env : expr) => {
         $env.data.insert(
             $name.to_string(),
-            Sexp::Func {
+            Expr::Func {
                 fun: $func,
                 name: $name,
             },
@@ -22,57 +55,16 @@ macro_rules! add_func_to_env {
     };
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct LookupError {
-    pub message: String,
-}
-
-pub struct Env<'a> {
-    pub data: HashMap<String, Sexp>,
-    pub outer: Option<&'a Env<'a>>,
-}
-
-impl<'a> Env<'a> {
-    pub fn search(&self, symbol: String) -> std::result::Result<Sexp, LookupError> {
-        match self.data.get(&symbol) {
-            Some(sexp) => Ok(sexp.clone()),
-            None => match self.outer {
-                None => Err(LookupError { message: symbol }),
-                Some(outer) => outer.search(symbol),
-            },
-        }
-    }
-
-    pub fn new(outer: Option<&'a Env<'a>>) -> Env<'a> {
-        Env {
-            data: HashMap::new(),
-            outer,
-        }
-    }
-}
-
 impl<'a> Default for Env<'a> {
     fn default() -> Self {
-        let mut default = Env::new(None);
+        let mut env = Self::new();
 
-        // predicates
-        add_func_to_env!("atom?", is_atom, default);
-        add_func_to_env!("list?", is_list, default);
-        add_func_to_env!("function?", is_function, default);
-        add_func_to_env!("string?", is_string, default);
-        add_func_to_env!("symbol?", is_symbol, default);
-        add_func_to_env!("number?", is_number, default);
+        // mathematical operators
+        add_func_to_env!("add", mathop::add, env);
+        add_func_to_env!("sub", mathop::sub, env);
+        add_func_to_env!("mul", mathop::mul, env);
+        add_func_to_env!("div", mathop::div, env);
 
-        // list manipulation
-        add_func_to_env!("list", list, default);
-        add_func_to_env!("car", car, default);
-        add_func_to_env!("cdr", cdr, default);
-        add_func_to_env!("append", append, default);
-        add_func_to_env!("prepend", prepend, default);
-
-        // non eval
-        add_func_to_env!("quote", quote, default);
-
-        default
+        env
     }
 }

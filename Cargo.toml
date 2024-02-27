@@ -7,4 +7,10 @@ authors = ["Bartosz Marczyński <marczynski.bartosz@gmail.com>"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1.0.68"
+itertools = "0.10.5"
+log = "0.4.17"
+pest = { version = "2.5.4", features = ["std", "thiserror", "pretty-print"] }
+pest_derive = "2.5.4"
 rstest = "0.14.0"
+thiserror = "1.0.38"

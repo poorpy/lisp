@@ -1,0 +1,27 @@
+COMMENT = _{ ";" ~ (!NEWLINE ~ ANY)* ~ NEWLINE?}
+WHITESPACE = _{(" "| NEWLINE)}
+eoi = _{ !ANY }
+
+number = @{ int }
+    int = { ("+" | "-")? ~ digit+ }
+    digit = { '0' .. '9' }
+
+symbol = @{ keyword | identifier }
+    keyword = { "+" | "-" | "*" | "/" | "%" | "^" | "=" | "<" | ">" | "!" }
+    identifier = @{ letter ~ (letter | "?" | "_" | "-")* }
+    letter = _{ 'a' .. 'z' | 'A' .. 'Z' }
+
+string = @{ "\"" ~ (escape | !("\"" | "\\") ~ ANY)* ~ "\"" }
+    escape = _{ "\\" ~ ("\"" | "\\" | "/" | "n" | "r" | "t") }
+
+sexpr = { "(" ~ expr* ~ ")" }
+
+qexpr = { "{" ~ expr* ~ "}" }
+
+binding = { "(" ~ "let" ~ symbol ~ expr ~ ")" }
+
+lambda = { "(" ~ "lambda" ~ "(" ~ identifier* ~ ")" ~ expr ~ ")" }
+
+expr = { binding | number | symbol | string | lambda | sexpr | qexpr }
+
+lisp = _{ SOI ~ (COMMENT| expr)* ~ eoi }

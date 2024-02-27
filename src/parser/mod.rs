@@ -1,123 +1,108 @@
-mod rewrite;
+#![allow(dead_code)]
+use itertools::Itertools;
+use pest::iterators::Pair;
+use pest_derive::Parser;
 
-#[cfg(test)]
-mod tests;
+use thiserror::Error;
 
-use std::collections::VecDeque;
+use std::num::ParseIntError;
 
-use super::lexer::Token;
-use crate::eval::RuntimeError;
+#[cfg(debug_assertions)]
+const _GRAMMAR: &str = include_str!("grammar.pest");
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct ParserError {
-    pub message: String,
+#[derive(Parser)]
+#[grammar = "parser/grammar.pest"]
+pub struct LispParser;
+
+#[derive(Debug, Error, PartialEq, Clone)]
+pub enum Error {
+    #[error("failed to parse int")]
+    InvalidInt(#[from] ParseIntError),
+
+    #[error("expected expr got: {0}")]
+    MissingExpr(String),
+
+    #[error("expected int got: {0}")]
+    MissingInt(String),
+
+    #[error("missing function body: {0}")]
+    MissingBody(String),
+
+    #[error("only symbols are allowed in formals block: {0}")]
+    InvalidFormals(String),
+
+    #[error("unexpected token: {0:?}")]
+    UnexpectedToken(Rule),
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum Atom {
-    Nil,
-    T,
+#[derive(Debug, Clone)]
+pub enum Ast {
+    Int(i64),
+    Str(String),
     Symbol(String),
-    String(String),
-    Number(f64),
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum Sexp {
-    Atom(Atom),
-    List(VecDeque<Sexp>),
-    Func {
-        fun: fn(VecDeque<Sexp>) -> std::result::Result<Sexp, RuntimeError>,
-        name: &'static str,
+    SExpr(Vec<Ast>),
+    QExpr(Vec<Ast>),
+    Binding {
+        symbol: String,
+        expr: Box<Ast>,
+    },
+    Lambda {
+        formals: Vec<String>,
+        body: Box<Ast>,
     },
 }
 
-impl Sexp {
-    pub fn get_kind_name(&self) -> &str {
-        match &self {
-            Sexp::Atom(_) => "atom",
-            Sexp::List(_) => "list",
-            Sexp::Func { .. } => "builtin function",
+pub fn read(parsed: Pair<Rule>) -> Result<Ast, Error> {
+    fn into_inner_vec(pair: Pair<Rule>) -> Result<Vec<Ast>, Error> {
+        pair.into_inner()
+            .filter(|p| !matches!(p.as_rule(), Rule::COMMENT))
+            .map(read)
+            .collect::<Result<Vec<_>, Error>>()
+    }
+
+    let span = parsed.clone().as_span().as_str();
+
+    match parsed.as_rule() {
+        Rule::sexpr => Ok(Ast::SExpr(into_inner_vec(parsed)?)),
+        Rule::qexpr => Ok(Ast::QExpr(into_inner_vec(parsed)?)),
+        Rule::binding => {
+            let (symbol, expr) = parsed
+                .into_inner()
+                .next_tuple()
+                .ok_or(Error::MissingExpr(span.to_string()))?;
+            Ok(Ast::Binding {
+                symbol: symbol.as_span().as_str().to_string(),
+                expr: Box::new(read(expr)?),
+            })
         }
-    }
-}
+        Rule::lambda => {
+            let formals: Vec<String> = parsed
+                .clone()
+                .into_inner()
+                .filter(|p| matches!(p.as_rule(), Rule::identifier))
+                .map(|p| p.as_str().to_string())
+                .collect();
+            let expr = parsed
+                .into_inner()
+                .find(|p| p.as_rule() != Rule::identifier)
+                .ok_or(Error::MissingBody(span.to_string()))?;
 
-impl From<Vec<Sexp>> for Sexp {
-    fn from(vec: Vec<Sexp>) -> Self {
-        Sexp::List(VecDeque::from(vec))
-    }
-}
-
-pub type Result<T> = std::result::Result<T, ParserError>;
-
-pub fn read_from_tokens(tokens: Vec<Token>) -> Result<VecDeque<Sexp>> {
-    let mut expressions: VecDeque<Sexp> = VecDeque::new();
-
-    let mut tokens = tokens.into_iter();
-    while let Some(token) = tokens.next() {
-        match token {
-            Token::RParen => {
-                return Err(ParserError {
-                    message: String::from("unexpected closing paren"),
-                })
-            }
-            Token::LParen => {
-                expressions.push_back(parse_list(&mut tokens)?);
-            }
-            Token::String(token) => {
-                expressions.push_back(parse_string(token));
-            }
-            Token::Symbol(token) => expressions.push_back(parse_symbol(token)),
+            Ok(Ast::Lambda {
+                formals,
+                body: Box::new(read(expr)?),
+            })
         }
-    }
-
-    Ok(rewrite::rewrite_quotes(expressions))
-}
-
-fn parse_string(token: String) -> Sexp {
-    Sexp::Atom(Atom::String(token))
-}
-
-fn parse_symbol(token: String) -> Sexp {
-    if let "t" | "T" | "true" = token.as_str() {
-        return Sexp::Atom(Atom::T);
-    }
-
-    if let "nil" | "NIL" | "false" = token.as_str() {
-        return Sexp::Atom(Atom::Nil);
-    }
-
-    if let Ok(f) = token.parse::<f64>() {
-        return Sexp::Atom(Atom::Number(f));
-    }
-
-    Sexp::Atom(Atom::Symbol(token))
-}
-
-fn parse_list<I>(tokens: &mut I) -> Result<Sexp>
-where
-    I: Iterator<Item = Token>,
-{
-    let mut vec: VecDeque<Sexp> = VecDeque::new();
-    while let Some(token) = tokens.next() {
-        match token {
-            Token::RParen => {
-                if vec.is_empty() {
-                    return Ok(Sexp::Atom(Atom::Nil));
-                }
-                return Ok(Sexp::List(vec));
-            }
-            Token::LParen => {
-                vec.push_back(parse_list(tokens)?);
-            }
-            Token::String(token) => {
-                vec.push_back(parse_string(token));
-            }
-            Token::Symbol(token) => vec.push_back(parse_symbol(token)),
+        Rule::expr => {
+            let inner = parsed
+                .into_inner()
+                .next()
+                .ok_or(Error::MissingExpr(span.to_string()))?;
+            read(inner)
         }
+        Rule::number => Ok(Ast::Int(span.parse::<i64>()?)),
+        //string without outer quotes
+        Rule::string => Ok(Ast::Str(span[1..span.len() - 1].to_string())),
+        Rule::symbol => Ok(Ast::Symbol(span.to_string())),
+        _ => Err(Error::UnexpectedToken(parsed.as_rule())),
     }
-    Err(ParserError {
-        // this should be unreachable due to lexer check
-        message: String::from("missing closing parenthesis"),
-    })
 }
