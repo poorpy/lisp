@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+#![allow(clippy::enum_variant_names)]
 
 use std::fmt;
 
@@ -29,6 +30,9 @@ pub enum Error {
 
     #[error("tried to divide by zero")]
     DivideByZero,
+
+    #[error("tired to evaluate undefined symbol: {symbol} ")]
+    Undefined { symbol: String },
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -126,7 +130,7 @@ impl fmt::Display for Expr {
 pub fn eval(expr: Expr, env: &mut env::Env) -> Result<Expr> {
     match expr {
         Expr::Int(_) | Expr::Str(_) | Expr::Func { .. } | Expr::Lambda { .. } => Ok(expr),
-        Expr::Symbol(s) => Ok(env.get(&s).unwrap()),
+        Expr::Symbol(s) => Ok(env.get(&s).ok_or(Error::Undefined { symbol: s })?),
         Expr::QExpr(vec) => Ok(Expr::SExpr(vec)),
         Expr::SExpr(vec) => {
             let evaluated = vec
